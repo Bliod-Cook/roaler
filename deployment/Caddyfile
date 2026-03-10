@@ -1,0 +1,15 @@
+:8080 {
+  root * /srv
+  encode zstd gzip
+  file_server
+
+  handle /api/* {
+    reverse_proxy api:8080
+  }
+
+  handle /webhooks/* {
+    reverse_proxy api:8080
+  }
+
+  try_files {path} /index.html
+}

@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: roaler
+      POSTGRES_USER: roaler
+      POSTGRES_PASSWORD: roaler
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile.api
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - roaler-files:/var/lib/roaler/files
+
+  worker:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile.worker
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - roaler-files:/var/lib/roaler/files
+
+  web:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile.web
+    depends_on:
+      - api
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres-data:
+  roaler-files:
+

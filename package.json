@@ -1,0 +1,13 @@
+{
+  "name": "roaler-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.31.0",
+  "scripts": {
+    "build:web": "pnpm --filter @roaler/web build",
+    "dev:web": "pnpm --filter @roaler/web dev",
+    "test:web": "pnpm --filter @roaler/web test",
+    "test:e2e": "pnpm --filter @roaler/web test:e2e",
+    "typecheck:web": "pnpm --filter @roaler/web typecheck"
+  }
+}
+

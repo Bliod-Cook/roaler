@@ -1,0 +1,13 @@
+FROM rust:1.92-bookworm AS builder
+WORKDIR /app
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+RUN cargo build --release -p roaler-worker
+
+FROM debian:bookworm-slim
+WORKDIR /srv
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/roaler-worker /usr/local/bin/roaler-worker
+ENV RUST_LOG=info
+CMD ["roaler-worker"]
+
