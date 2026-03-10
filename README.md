@@ -27,6 +27,14 @@ Roaler 是一个开源、自部署、Web 优先的信息流平台，目标是提
 2. 启动完整栈：`docker compose up --build`
 3. 打开 `http://localhost:8080`
 
+## GHCR 镜像发布与部署
+- 仓库新增了 `/.github/workflows/docker-publish.yml`，会在推送到 `main` / `master`、推送 `v*` 标签或手动触发时构建并发布 3 个镜像到 GHCR。
+- 当前仓库发布出的镜像名称为：`ghcr.io/bliod-cook/roaler-api`、`ghcr.io/bliod-cook/roaler-worker`、`ghcr.io/bliod-cook/roaler-web`。
+- 部署时先复制环境变量：`cp .env.example .env`，再在 shell 或 `.env` 中显式设置：
+  - `ROALER_IMAGE_TAG=<latest|vX.Y.Z|sha-...>`
+- 使用示例编排启动：`docker compose -f docker-compose.ghcr.yml up -d`
+- 如果 GHCR 包是私有的，先执行：`echo "$CR_PAT" | docker login ghcr.io -u <github-user> --password-stdin`
+
 ## 特性范围
 - 单管理员初始化与登录
 - RSS / Atom / JSON Feed / RSSHub 源管理
@@ -40,4 +48,3 @@ Roaler 是一个开源、自部署、Web 优先的信息流平台，目标是提
 - RSSHub 需要外部实例，本项目不会自带 RSSHub 服务。
 - WebSub 近实时更新需要实例具备可被 hub 回调的公网地址。
 - 默认许可证为 `AGPL-3.0`。
-
