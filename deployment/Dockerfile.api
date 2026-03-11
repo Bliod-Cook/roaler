@@ -1,13 +1,21 @@
+# syntax=docker/dockerfile:1.7
 FROM rust:1.92-bookworm AS builder
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
-RUN cargo build --release -p roaler-api
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=/app/target \
+    CARGO_TARGET_DIR=/app/target/${TARGETOS}-${TARGETARCH}${TARGETVARIANT} \
+    cargo build --release -p roaler-api && \
+    cp /app/target/${TARGETOS}-${TARGETARCH}${TARGETVARIANT}/release/roaler-api /tmp/roaler-api
 
 FROM debian:bookworm-slim
 WORKDIR /srv
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/roaler-api /usr/local/bin/roaler-api
+COPY --from=builder /tmp/roaler-api /usr/local/bin/roaler-api
 ENV RUST_LOG=info
 CMD ["roaler-api"]
-
