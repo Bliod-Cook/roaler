@@ -1,6 +1,6 @@
 import { useCollections, useCreateCollection, useSession } from "@/api/hooks";
-import { SectionHeader } from "@/components/shell/section-header";
 import { CollectionGrid } from "@/features/collections/collection-grid";
+import { SubviewShell } from "@/features/layout/subview-shell";
 
 export function CollectionsPage() {
   const session = useSession(false);
@@ -8,12 +8,11 @@ export function CollectionsPage() {
   const collections = useCollections(isAuthenticated);
   const createCollection = useCreateCollection();
   return (
-    <div className="space-y-6">
-      <SectionHeader
-        eyebrow="Collections"
-        title="Curate feed groups"
-        description="用合集把多个来源组织成稳定阅读视角。"
-      />
+    <SubviewShell
+      description="用合集把多个来源整理成稳定阅读视角，后续也能承接 digest 和批量处理。"
+      eyebrow="Collections"
+      title="Group subscriptions into reusable views"
+    >
       <CollectionGrid
         busy={createCollection.isPending}
         items={collections.data}
@@ -21,6 +20,6 @@ export function CollectionsPage() {
           await createCollection.mutateAsync(payload);
         }}
       />
-    </div>
+    </SubviewShell>
   );
 }

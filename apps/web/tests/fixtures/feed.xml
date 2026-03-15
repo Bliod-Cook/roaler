@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Seeded Integration Feed</title>
+    <link>https://example.com</link>
+    <description>Fixture feed for Roaler Playwright coverage.</description>
+    <item>
+      <title>Roaler fixture entry</title>
+      <link>https://example.com/fixture-entry</link>
+      <guid>fixture-entry-1</guid>
+      <description>This entry is served by the local fixture feed so the worker can sync real data.</description>
+      <pubDate>Sun, 15 Mar 2026 08:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

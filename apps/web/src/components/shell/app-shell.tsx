@@ -9,9 +9,9 @@ export function AppShell({ children }: PropsWithChildren) {
   const user = session.data?.user ?? null;
 
   return (
-    <div className="mx-auto min-h-screen max-w-[1500px] px-4 py-6 text-ink lg:px-8">
+    <div className="app-shell-grid mx-auto max-w-[1680px] px-3 py-3 text-text sm:px-4 lg:px-5">
       <MobileNav user={user} />
-      <div className="flex gap-6">
+      <div className="flex gap-4">
         <Sidebar user={user} />
         <main className="min-w-0 flex-1">{children}</main>
       </div>

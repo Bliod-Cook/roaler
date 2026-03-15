@@ -7,9 +7,8 @@ export function Card({
   className,
 }: PropsWithChildren<{ className?: string }>) {
   return (
-    <section className={cn("editorial-surface rounded-[2rem] p-6", className)}>
+    <section className={cn("app-panel rounded-panel p-6", className)}>
       {children}
     </section>
   );
 }
-

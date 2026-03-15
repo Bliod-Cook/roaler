@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { SectionHeader } from "@/components/shell/section-header";
+import { SubviewShell } from "@/features/layout/subview-shell";
 import { SearchPanel } from "@/features/search/search-panel";
 import { useSearch, useSession } from "@/api/hooks";
 
@@ -9,13 +9,12 @@ export function SearchPage() {
   const session = useSession(false);
   const search = useSearch(query, Boolean(session.data?.user));
   return (
-    <div className="space-y-6">
-      <SectionHeader
-        eyebrow="Search"
-        title="Search the whole archive"
-        description="按标题、摘要、抽取正文和 AI 摘要检索。"
-      />
+    <SubviewShell
+      description="按标题、摘要、抽取正文和 AI 摘要检索整个归档，结果直接回跳阅读详情。"
+      eyebrow="Search"
+      title="Search the whole archive"
+    >
       <SearchPanel items={search.data} onQueryChange={setQuery} query={query} />
-    </div>
+    </SubviewShell>
   );
 }

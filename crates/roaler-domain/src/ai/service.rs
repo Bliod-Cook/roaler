@@ -150,7 +150,7 @@ async fn persist_job_success(
     sqlx::query(
         r#"
         update ai_jobs
-        set status = 'succeeded', output_json = $2, error_message = null, updated_at = now()
+        set status = 'success', output_json = $2, error_message = null, updated_at = now()
         where id = $1
         "#,
     )
@@ -266,4 +266,3 @@ fn validate_entry_task(task_type: AiTaskType) -> AppResult<()> {
     }
     Ok(())
 }
-

@@ -24,11 +24,11 @@ pub enum AiTaskType {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema, Type, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
-#[sqlx(type_name = "job_status", rename_all = "snake_case")]
+#[sqlx(type_name = "ai_job_status", rename_all = "snake_case")]
 pub enum JobStatus {
     Pending,
     Running,
-    Succeeded,
+    Success,
     Failed,
 }
 
@@ -58,4 +58,3 @@ pub struct EntryAiRequestInput {
 pub struct CollectionDigestRequest {
     pub hours: Option<i64>,
 }
-

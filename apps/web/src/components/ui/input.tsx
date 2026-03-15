@@ -7,10 +7,9 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       className={cn(
-        "w-full rounded-2xl border border-borderWarm bg-white/80 px-4 py-3 text-sm text-ink outline-none placeholder:text-ink/50 focus:border-accent",
+        "h-11 w-full rounded-2xl border border-line bg-panel-soft px-4 text-sm text-text outline-none transition-colors placeholder:text-text-tertiary focus:border-accent focus:bg-panel disabled:cursor-not-allowed disabled:opacity-60",
         props.className,
       )}
     />
   );
 }
-

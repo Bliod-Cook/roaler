@@ -20,9 +20,8 @@ pub enum SourceKind {
 #[serde(rename_all = "snake_case")]
 #[sqlx(type_name = "sync_status", rename_all = "snake_case")]
 pub enum SyncStatus {
-    Pending,
     Running,
-    Succeeded,
+    Success,
     Failed,
 }
 
@@ -117,4 +116,3 @@ pub struct WebhookSubscription {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
-

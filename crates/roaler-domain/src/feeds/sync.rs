@@ -1,4 +1,5 @@
 use reqwest::header::{ETAG, IF_MODIFIED_SINCE, IF_NONE_MATCH, LAST_MODIFIED};
+use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
 use crate::{
@@ -19,11 +20,11 @@ pub async fn sync_source_now(context: &AppContext, source_id: Uuid, reason: &str
     let sync_run_id = create_sync_run(context, source_id, reason).await?;
     let fetch = fetch_source(context, &source).await;
     match fetch {
-        Ok(FetchOutcome::NotModified) => finish_sync(context, sync_run_id, 0, 0, SyncStatus::Succeeded, None).await,
+        Ok(FetchOutcome::NotModified) => finish_sync(context, sync_run_id, 0, 0, SyncStatus::Success, None).await,
         Ok(FetchOutcome::Feed(parsed, etag, last_modified)) => {
             let inserted = ingest_parsed_feed(context, &source, parsed).await?;
             update_source_after_sync(context, source_id, etag, last_modified, None).await?;
-            finish_sync(context, sync_run_id, inserted as i32, inserted as i32, SyncStatus::Succeeded, None).await
+            finish_sync(context, sync_run_id, inserted as i32, inserted as i32, SyncStatus::Success, None).await
         }
         Err(error) => {
             update_source_after_sync(context, source_id, None, None, Some(error.to_string())).await?;
@@ -90,8 +91,8 @@ async fn create_sync_run(context: &AppContext, source_id: Uuid, reason: &str) ->
     let id = Uuid::new_v4();
     sqlx::query(
         r#"
-        insert into sync_runs (id, source_id, trigger_kind, status)
-        values ($1, $2, $3, 'running')
+        insert into sync_runs (id, source_id, trigger_kind, status, fetched_count, inserted_count)
+        values ($1, $2, $3, 'running', 0, 0)
         "#,
     )
     .bind(id)
@@ -171,13 +172,14 @@ async fn update_source_after_sync(
 }
 
 async fn save_entry(context: &AppContext, source_id: Uuid, entry: &NormalizedEntry) -> AppResult<Uuid> {
+    let content_hash = build_content_hash(entry);
     let inserted = sqlx::query_scalar::<_, Uuid>(
         r#"
         insert into entries (
           id, source_id, external_id, dedupe_key, guid, url, title, summary,
-          author_name, published_at, media_json, raw_payload, content_seed_html
+          author_name, published_at, media_json, raw_payload, content_seed_html, content_hash
         )
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         on conflict (dedupe_key) do nothing
         returning id
         "#,
@@ -195,6 +197,7 @@ async fn save_entry(context: &AppContext, source_id: Uuid, entry: &NormalizedEnt
     .bind(entry.media_json.clone())
     .bind(entry.raw_payload.clone())
     .bind(&entry.content_seed_html)
+    .bind(content_hash)
     .fetch_optional(&context.pool)
     .await?;
     match inserted {
@@ -204,6 +207,7 @@ async fn save_entry(context: &AppContext, source_id: Uuid, entry: &NormalizedEnt
 }
 
 async fn update_existing_entry(context: &AppContext, entry: &NormalizedEntry) -> AppResult<Uuid> {
+    let content_hash = build_content_hash(entry);
     let id = sqlx::query_scalar::<_, Uuid>(
         r#"
         update entries
@@ -216,6 +220,7 @@ async fn update_existing_entry(context: &AppContext, entry: &NormalizedEntry) ->
           media_json = $7,
           raw_payload = $8,
           content_seed_html = coalesce($9, content_seed_html),
+          content_hash = $10,
           updated_at = now()
         where dedupe_key = $1
         returning id
@@ -230,6 +235,7 @@ async fn update_existing_entry(context: &AppContext, entry: &NormalizedEntry) ->
     .bind(entry.media_json.clone())
     .bind(entry.raw_payload.clone())
     .bind(&entry.content_seed_html)
+    .bind(content_hash)
     .fetch_one(&context.pool)
     .await?;
     Ok(id)
@@ -251,4 +257,13 @@ async fn ensure_entry_content_row(context: &AppContext, entry_id: Uuid) -> AppRe
 
 fn header_value(headers: &reqwest::header::HeaderMap, name: reqwest::header::HeaderName) -> Option<String> {
     headers.get(name).and_then(|value| value.to_str().ok()).map(str::to_owned)
+}
+
+fn build_content_hash(entry: &NormalizedEntry) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(entry.title.as_bytes());
+    hasher.update(entry.summary.as_deref().unwrap_or_default().as_bytes());
+    hasher.update(entry.content_seed_html.as_deref().unwrap_or_default().as_bytes());
+    hasher.update(entry.url.as_deref().unwrap_or_default().as_bytes());
+    format!("{:x}", hasher.finalize())
 }

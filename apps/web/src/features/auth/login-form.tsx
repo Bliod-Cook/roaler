@@ -1,7 +1,8 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Field } from "@/components/ui/field";
+import { Icon } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 
 type LoginFormProps = {
@@ -20,29 +21,38 @@ export function LoginForm({ busy, error, onSubmit }: LoginFormProps) {
   }
 
   return (
-    <Card className="mx-auto max-w-xl">
-      <p className="eyebrow">Session</p>
-      <h1 className="mt-3 font-display text-4xl">Return to your reading desk.</h1>
-      <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-        <Input
-          autoComplete="email"
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-        <Input
-          autoComplete="current-password"
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        <Button className="w-full" disabled={busy} type="submit">
-          {busy ? "Signing in…" : "Sign in"}
-        </Button>
-      </form>
-    </Card>
+    <form className="space-y-5" onSubmit={handleSubmit}>
+      <div className="grid gap-5">
+        <Field hint="使用初始化阶段创建的管理员邮箱。" htmlFor="login-email" label="Email">
+          <Input
+            autoComplete="email"
+            id="login-email"
+            placeholder="admin@example.com"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+        </Field>
+        <Field hint="当前仅支持单管理员会话登录。" htmlFor="login-password" label="Password">
+          <Input
+            autoComplete="current-password"
+            id="login-password"
+            placeholder="••••••••"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </Field>
+      </div>
+      {error ? (
+        <div className="rounded-card border border-danger/25 bg-danger/10 p-3 text-sm text-danger">
+          {error}
+        </div>
+      ) : null}
+      <Button className="w-full" disabled={busy} size="lg" type="submit">
+        <Icon name="check" />
+        {busy ? "Signing in…" : "Sign in"}
+      </Button>
+    </form>
   );
 }
